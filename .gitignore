@@ -1,0 +1,34 @@
+# --- IDE (Android Studio / IntelliJ) ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# --- Build Output ---
+bin/
+gen/
+out/
+build/
+app/build/
+
+# --- Gradle ---
+.gradle/
+build.gradle.kts.swp
+gradlew.bat
+local.properties
+
+# --- Log & Temp ---
+*.log
+*.tmp
+*.bak
+.DS_Store
+
+# --- Device & Testing ---
+*.apk
+*.ap_
+*.dex
+*.class

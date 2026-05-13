@@ -2,194 +2,211 @@ package com.example.sensenote.presentation.ui.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.sensenote.presentation.ui.components.SenseNoteBottomNavigation
+import com.example.sensenote.presentation.ui.components.BottomNavigation
+import com.example.sensenote.presentation.viewmodel.SeatMapViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SeatMapScreen(navController: NavController) {
-    val gridPadding = 20.dp
-    val hSpacing = 16.dp
-    val vSpacing = 24.dp
+fun SeatMapScreen(
+    navController: NavController,
+    contextId: Int,
+    className: String,
+    rows: Int,
+    cols: Int,
+    seatsPerTable: Int,
+    viewModel: SeatMapViewModel = hiltViewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
 
-    val seats = listOf(
-        Seat("Nguyễn Văn A", isWarning = true, Color(0xFFDCEDC8)), Seat("B", isWarning = true, Color(0xFFF48FB1)),
-        Seat("C", avatarColor = Color(0xFF455A64)), Seat("D", avatarColor = Color(0xFFEF9A9A)),
-        Seat("E", avatarColor = Color(0xFF80DEEA)), Seat("F", avatarColor = Color(0xFFFFF59D)),
-        Seat("G", avatarColor = Color(0xFFB39DDB)), Seat("H", avatarColor = Color(0xFF90CAF9)),
-        Seat("I", avatarColor = Color(0xFF9FA8DA)), Seat("K", avatarColor = Color(0xFFBCAAA4)),
-        Seat("L", avatarColor = Color(0xFFFF1744)), Seat("M", avatarColor = Color(0xFF81C784)),
-        Seat("N", avatarColor = Color(0xFF9575CD)), Seat("O", avatarColor = Color(0xFF66BB6A)),
-        Seat("Q", avatarColor = Color(0xFF00695C)), Seat("R", avatarColor = Color(0xFF80DEEA))
-    )
+    LaunchedEffect(contextId) {
+        viewModel.loadSeatMap(contextId)
+    }
 
     Scaffold(
-        bottomBar = { SenseNoteBottomNavigation(navController) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Lớp $className - Sơ đồ", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = {}) { Icon(Icons.Outlined.AutoFixHigh, null, tint = Color(0xFF9FA8DA)) }
+                    IconButton(onClick = {}) { Icon(Icons.Outlined.Visibility, null, tint = Color(0xFF9FA8DA)) }
+                    IconButton(onClick = {}) { Icon(Icons.Outlined.Edit, null, tint = Color(0xFF9FA8DA)) }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8F9FE))
+            )
+        },
+        bottomBar = { BottomNavigation(navController = navController) }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(Color(0xFFF1F3F9))
+                .background(Color(0xFFF8F9FE))
         ) {
-            SeatMapTopBar()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                for (r in 0 until rows) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        for (c in 0 until cols) {
+                            // SỬA LỖI: Tính toán index của bàn hiện tại (tableIndex)
+                            // Một bàn tại (r, c) sẽ chứa các ghế có ordinalIndex nằm trong khoảng từ
+                            // (r * cols + c) * seatsPerTable đến ((r * cols + c) + 1) * seatsPerTable - 1
+                            val tableIndex = r * cols + c
+                            val assignedInTable = state.seats.filter {
+                                (it.ordinalIndex / seatsPerTable) == tableIndex
+                            }
 
-            BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                val totalWidth = maxWidth
-                val seatWidth = (totalWidth - (gridPadding * 2) - (hSpacing * 3)) / 4
-                val seatHeight = seatWidth / 0.85f
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Box(
-                        modifier = Modifier
-                            .offset(x = gridPadding - 8.dp, y = gridPadding - 8.dp)
-                            .size(
-                                width = (seatWidth * 2) + hSpacing + 16.dp,
-                                height = (seatHeight * 2) + vSpacing + 16.dp
+                            TableCard(
+                                modifier = Modifier.weight(1f),
+                                seatsPerTable = seatsPerTable,
+                                assignedSeats = assignedInTable
                             )
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(Color(0xFFCE93D8).copy(alpha = 0.5f))
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = -(gridPadding - 8.dp), y = gridPadding - 8.dp)
-                            .size(
-                                width = seatWidth + 16.dp,
-                                height = (seatHeight * 4) + (vSpacing * 3) + 16.dp
-                            )
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(Color(0xFF455A64).copy(alpha = 0.8f))
-                    )
-                }
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    contentPadding = PaddingValues(gridPadding),
-                    horizontalArrangement = Arrangement.spacedBy(hSpacing),
-                    verticalArrangement = Arrangement.spacedBy(vSpacing),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(seats) { seat ->
-                        StudentSeatCard(seat)
+                        }
                     }
                 }
             }
 
-            BottomLegendSection()
+            // ... phần Bục giảng & Chú thích giữ nguyên
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            ) {
+                Text(
+                    "BẢNG ĐEN / BỤC GIẢNG",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.LightGray
+                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 64.dp, vertical = 4.dp)
+                        .height(6.dp),
+                    color = Color(0xFFCFD8DC),
+                    shape = RoundedCornerShape(4.dp)
+                ) {}
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    LegendItem(Color(0xFFCE93D8), "Khu vực tiếng ồn lớn.")
+                    LegendItem(Color(0xFF006064), "Khu vực gây mất tập trung.")
+                }
+                TeacherStation()
+            }
         }
     }
 }
 
 @Composable
-fun StudentSeatCard(seat: Seat) {
+fun TableCard(
+    modifier: Modifier = Modifier,
+    seatsPerTable: Int,
+    assignedSeats: List<com.example.sensenote.data.remote.dto.SeatAssignmentDto>
+) {
     Card(
-        modifier = Modifier.aspectRatio(0.85f),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = modifier.padding(2.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier.padding(4.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(seat.avatarColor)
-                    .then(if (seat.isWarning) Modifier.border(2.dp, Color.Red, CircleShape) else Modifier),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Person, null, tint = Color.Gray, modifier = Modifier.size(26.dp))
+            repeat(seatsPerTable) { seatIndex ->
+                // SỬA LỖI: Tìm học sinh có ordinalIndex khớp với vị trí ghế trong bàn này
+                val student = assignedSeats.find { (it.ordinalIndex % seatsPerTable) == seatIndex }
+
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    StudentAvatarItem(
+                        // Sử dụng displayName từ Backend
+                        name = student?.displayName ?: "Trống",
+                        isOccupied = student != null
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = seat.studentName,
-                style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Center,
-                lineHeight = 12.sp,
-                fontWeight = FontWeight.Medium
+        }
+    }
+}
+@Composable
+fun StudentAvatarItem(name: String, isOccupied: Boolean) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(32.dp) // Kích thước avatar nhỏ gọn để vừa khít màn hình dọc
+                .clip(CircleShape)
+                .background(if (isOccupied) Color.White else Color(0xFFF5F5F5))
+                .border(1.dp, if (isOccupied) Color(0xFF90CAF9) else Color.LightGray, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Person,
+                null,
+                tint = if (isOccupied) Color(0xFF90CAF9) else Color.LightGray,
+                modifier = Modifier.size(18.dp)
             )
         }
+        Text(
+            text = if (isOccupied) name.split(" ").last() else "", // Chỉ hiện tên riêng cho gọn
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = 8.sp,
+            maxLines = 1,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
 @Composable
-fun SeatMapTopBar() {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text("Lớp 3A - Sơ đồ", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Row {
-            Icon(Icons.Default.VisibilityOff, null, tint = Color(0xFF635BFF), modifier = Modifier.padding(horizontal = 8.dp).size(28.dp))
-            Icon(Icons.Default.GridOn, null, tint = Color(0xFF635BFF), modifier = Modifier.padding(horizontal = 8.dp).size(28.dp))
-            Icon(Icons.Default.Edit, null, tint = Color(0xFF635BFF), modifier = Modifier.padding(horizontal = 8.dp).size(28.dp))
-        }
-    }
-}
-
-@Composable
-fun BottomLegendSection() {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Card(
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            modifier = Modifier.weight(1f).height(120.dp)
+fun TeacherStation() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFB2EBF2)),
+            contentAlignment = Alignment.Center
         ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.Center) {
-                LegendItem(Color(0xFFCE93D8), "Khu vực tiếng ồn lớn.")
-                Spacer(modifier = Modifier.height(12.dp))
-                LegendItem(Color(0xFF455A64), "Khu vực gây mất tập trung.")
-            }
+            Icon(Icons.Default.Person, null, tint = Color(0xFF00838F), modifier = Modifier.size(28.dp))
         }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Card(
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            modifier = Modifier.size(120.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Box(modifier = Modifier.size(44.dp).clip(CircleShape).background(Color(0xFF80DEEA)), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Person, null, tint = Color.Gray)
-                }
-                Text("Giáo viên", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 8.dp))
-            }
-        }
+        Text("Giáo viên", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
     }
 }
 
 @Composable
 fun LegendItem(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(color))
-        Text("  $text", style = MaterialTheme.typography.bodySmall)
+        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text, style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontSize = 10.sp)
     }
 }
-
-data class Seat(val studentName: String, val isWarning: Boolean = false, val avatarColor: Color)

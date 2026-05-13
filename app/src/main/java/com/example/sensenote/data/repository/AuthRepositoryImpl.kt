@@ -1,38 +1,49 @@
 package com.example.sensenote.data.repository
 
-import com.example.sensenote.data.remote.ApiService
-import com.example.sensenote.data.remote.dto.LoginRequest
+import com.example.sensenote.data.remote.AuthApi
+import com.example.sensenote.data.remote.apiCall // Import hàm tiện ích từ Api.kt
+import com.example.sensenote.data.remote.dto.*
 import com.example.sensenote.domain.repository.AuthRepository
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val api: AuthApi
 ) : AuthRepository {
 
-    override suspend fun login(email: String, password: String): Result<Unit> {
+    override suspend fun login(email: String, password: String): Result<LoginResponse> {
         return try {
-            val response = apiService.login(LoginRequest(email, password))
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Đăng nhập thất bại: ${response.code()}"))
-            }
+            // Sử dụng apiCall để tự động kiểm tra success và unwrap data
+            val response = api.login(LoginRequest(email, password))
+            Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun register(email: String, password: String): Result<Unit> {
+    override suspend fun register(email: String, password: String, fullName: String): Result<RegisterResponse> {
         return try {
-            val response = apiService.register(LoginRequest(email, password))
-            if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("Đăng ký thất bại"))
+            val data = api.register(RegisterRequest(email, password, fullName))
+            Result.success(data)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun logout(): Result<Unit> = Result.success(Unit)
+    override suspend fun logout(): Result<Unit> {
+        return try {
+            apiCall { api.logout() }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
-    override suspend fun refreshToken(): Result<String> = Result.success("")
+    override suspend fun refreshToken(token: String): Result<LoginResponse> {
+        return try {
+            val data = apiCall { api.refreshToken(RefreshTokenRequest(token)) }
+            Result.success(data)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

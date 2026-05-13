@@ -1,12 +1,17 @@
 package com.example.sensenote.domain.repository
 
-import com.example.sensenote.domain.model.Student
-import kotlinx.coroutines.flow.Flow
+import com.example.sensenote.data.remote.dto.*
 
 interface StudentRepository {
-    fun getStudentsByClass(classId: String): Flow<List<Student>>
-    suspend fun getStudentInfo(studentId: String): Result<Student>
-    suspend fun addStudent(student: Student): Result<Unit>
-    suspend fun deleteStudent(studentId: String): Result<Unit>
-    suspend fun updateStudent(student: Student): Result<Unit>
+    suspend fun addStudent(request: AddStudentRequest): Result<AddStudentResponse>
+
+    // Cập nhật: Cần cả contextId và studentId
+    suspend fun getStudentInfo(contextId: Int, studentId: Int): Result<StudentInfoVm>
+
+    suspend fun deleteStudent(id: Int): Result<Unit>
+
+    suspend fun updateStudent(request: UpdateStudentRequest): Result<List<String>>
+
+    // Giữ lại nếu bạn vẫn dùng, hoặc xóa nếu đã chuyển sang SeatRepository hoàn toàn
+    suspend fun getStudentsByClass(classId: Int): Result<List<StudentSummaryDto>>
 }

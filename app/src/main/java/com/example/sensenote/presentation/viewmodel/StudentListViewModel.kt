@@ -2,41 +2,58 @@ package com.example.sensenote.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sensenote.domain.model.Student
-import com.example.sensenote.domain.usecase.GetStudentListUseCase
+import com.example.sensenote.data.remote.dto.SeatAssignmentDto
+import com.example.sensenote.domain.repository.SeatRepository
+import com.example.sensenote.domain.repository.StudentRepository // Vẫn cần để xóa học sinh
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class StudentListUiState(
+    // Chuyển sang sử dụng SeatAssignmentDto
+    val students: List<SeatAssignmentDto> = emptyList(),
+    val isLoading: Boolean = false,
+    val searchQuery: String = "",
+    val errorMessage: String? = null
+)
+
 @HiltViewModel
 class StudentListViewModel @Inject constructor(
-    private val getStudentListUseCase: GetStudentListUseCase
+    private val seatRepository: SeatRepository,
+    private val studentRepository: StudentRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<StudentListUiState>(StudentListUiState.Loading)
-    val uiState: StateFlow<StudentListUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(StudentListUiState())
+    val uiState = _uiState.asStateFlow()
 
-    fun loadStudents(classId: String) {
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    fun loadStudents(contextId: Int) {
         viewModelScope.launch {
-            getStudentListUseCase(classId)
-                .catch { e ->
-                    _uiState.value = StudentListUiState.Error(e.message ?: "Lỗi không xác định")
+            _uiState.update { it.copy(isLoading = true) }
+            // Lấy danh sách chỗ ngồi từ SeatRepository
+            seatRepository.getSeatAssignments(contextId)
+                .onSuccess { data ->
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        students = data // Data ở đây đã là List<SeatAssignmentDto>
+                    )}
                 }
-                .collect { students ->
-                    if (students.isEmpty()) {
-                        _uiState.value = StudentListUiState.Empty
-                    } else {
-                        _uiState.value = StudentListUiState.Success(students)
-                    }
+                .onFailure { ex ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = ex.message) }
                 }
         }
     }
-}
 
-sealed class StudentListUiState {
-    object Loading : StudentListUiState()
-    data class Success(val students: List<Student>) : StudentListUiState()
-    data class Error(val message: String) : StudentListUiState()
-    object Empty : StudentListUiState()
+    fun deleteStudent(studentId: Int, contextId: Int) {
+        viewModelScope.launch {
+            // Xóa học sinh dựa trên ID thực tế
+            studentRepository.deleteStudent(studentId).onSuccess {
+                loadStudents(contextId)
+            }
+        }
+    }
 }

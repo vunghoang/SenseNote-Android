@@ -9,52 +9,48 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.sensenote.domain.model.Student
-import com.example.sensenote.presentation.ui.components.SenseNoteBottomNavigation
+import com.example.sensenote.presentation.ui.components.BottomNavigation
 import com.example.sensenote.presentation.ui.components.StudentCard
 import com.example.sensenote.presentation.ui.navigation.Screen
+import com.example.sensenote.presentation.viewmodel.StudentListViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentListScreen(navController: NavController) {
-    val mockStudents = listOf(
-        Student(
-            id = "1",
-            name = "Nguyễn Văn A",
-            dob = "10/05/2015",
-            status = "Mất tập trung",
-            isWarning = true,
-            classroomId = "3A",
-            sensoryThresholds = mapOf("Tiếng ồn" to 80, "Ánh sáng" to 60)
-        ),
-        Student(
-            id = "2",
-            name = "Học sinh B",
-            dob = "12/08/2015",
-            status = "Nhạy cảm tiếng ồn",
-            isWarning = true,
-            classroomId = "3A",
-            sensoryThresholds = mapOf("Tiếng ồn" to 90, "Ánh sáng" to 40)
-        ),
-        Student(
-            id = "3",
-            name = "Học sinh C",
-            dob = "05/02/2015",
-            status = "Bình thường",
-            isWarning = false,
-            classroomId = "3A",
-            sensoryThresholds = mapOf("Tiếng ồn" to 50, "Ánh sáng" to 50)
-        )
-    )
+fun StudentListScreen(
+    navController: NavController,
+    contextId: Int,
+    className: String,
+    rows: Int,
+    cols: Int,
+    seatsPerTable: Int,
+    viewModel: StudentListViewModel = hiltViewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(contextId) {
+        viewModel.loadStudents(contextId)
+    }
 
     Scaffold(
-        bottomBar = { SenseNoteBottomNavigation(navController) }
+        bottomBar = { BottomNavigation(navController = navController) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(Screen.AddStudent.createRoute(contextId, className, rows, cols, seatsPerTable))
+                },
+                containerColor = Color(0xFF635BFF)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+            }
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -62,52 +58,50 @@ fun StudentListScreen(navController: NavController) {
                 .fillMaxSize()
                 .background(Color(0xFFF8F9FE))
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Text("Lớp 3A - Danh sách lớp", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("${mockStudents.size}/25", color = Color.Gray)
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Lớp $className", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(text = "Sơ đồ: ${rows}x${cols}", color = Color.Gray)
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = "", onValueChange = {},
-                    placeholder = { Text("Tìm kiếm học sinh...") },
-                    modifier = Modifier.weight(1f).height(56.dp),
-                    shape = RoundedCornerShape(50),
-                    leadingIcon = { Icon(Icons.Default.Search, null) },
-                    colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White)
+            OutlinedTextField(
+                value = state.searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                placeholder = { Text("Tìm tên...") },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(50),
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                    unfocusedBorderColor = Color.Transparent
                 )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Button(
-                        onClick = { },
-                        modifier = Modifier.size(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF635BFF)),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(32.dp))
-                    }
-                }
-            }
+            )
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(mockStudents) { student ->
-                    StudentCard(
-                        student = student,
-                        onClick = { studentId ->
-                            navController.navigate(Screen.StudentDetail.createRoute(studentId))
-                        },
-                        onEdit = { },
-                        onDelete = { }
-                    )
+            if (state.isLoading) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF635BFF))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // SỬA TẠI ĐÂY: Sử dụng displayName thay vì name
+                    val filtered = state.students.filter { it.displayName.contains(state.searchQuery, true) }
+
+                    // SỬA TẠI ĐÂY: Sử dụng studentId thay vì id làm key
+                    items(filtered, key = { it.studentId }) { student ->
+                        StudentCard(
+                            student = student, // Đảm bảo StudentCard nhận SeatAssignmentDto hoặc cập nhật nó tương ứng
+                            onClick = { id ->
+                                navController.navigate(Screen.StudentDetail.createRoute(id.toString()))
+                            },
+                            onEdit = { /* TODO */ },
+                            // SỬA TẠI ĐÂY: Sử dụng studentId
+                            onDelete = { viewModel.deleteStudent(student.studentId, contextId) }
+                        )
+                    }
                 }
             }
         }

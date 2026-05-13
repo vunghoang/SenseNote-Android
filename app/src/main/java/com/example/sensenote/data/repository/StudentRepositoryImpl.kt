@@ -1,34 +1,58 @@
 package com.example.sensenote.data.repository
 
-import com.example.sensenote.data.mapper.toDomain
-import com.example.sensenote.data.remote.ApiService
-import com.example.sensenote.domain.model.Student
+import com.example.sensenote.data.remote.StudentApi
+import com.example.sensenote.data.remote.dto.*
 import com.example.sensenote.domain.repository.StudentRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class StudentRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val api: StudentApi
 ) : StudentRepository {
 
-    override fun getStudentsByClass(classId: String): Flow<List<Student>> = flow {
-        val dtos = apiService.getStudentsByClass(classId)
-        emit(dtos.map { it.toDomain() })
-    }
-
-    override suspend fun getStudentInfo(studentId: String): Result<Student> {
+    override suspend fun addStudent(request: AddStudentRequest): Result<AddStudentResponse> {
         return try {
-            val dto = apiService.getStudentInfo(studentId)
-            Result.success(dto.toDomain())
+            // Gọi trực tiếp, không dùng apiCall vì API không trả về ApiResponse
+            Result.success(api.addStudent(request))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun addStudent(student: Student): Result<Unit> = Result.success(Unit)
+    override suspend fun getStudentInfo(contextId: Int, studentId: Int): Result<StudentInfoVm> {
+        return try {
+            // Truyền đủ 2 tham số theo yêu cầu của Backend
+            val data = api.getStudentInfo(contextId, studentId)
+            Result.success(data)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
-    override suspend fun deleteStudent(studentId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun deleteStudent(id: Int): Result<Unit> {
+        return try {
+            api.deleteStudent(id)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
-    override suspend fun updateStudent(student: Student): Result<Unit> = Result.success(Unit)
+    override suspend fun updateStudent(request: UpdateStudentRequest): Result<List<String>> {
+        return try {
+            val data = api.updateStudent(request)
+            Result.success(data)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getStudentsByClass(classId: Int): Result<List<StudentSummaryDto>> {
+        return try {
+            // Truy cập trực tiếp vào thuộc tính .students của StudentListVm
+            val response = api.getStudentsByClass(classId)
+            Result.success(response.students)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

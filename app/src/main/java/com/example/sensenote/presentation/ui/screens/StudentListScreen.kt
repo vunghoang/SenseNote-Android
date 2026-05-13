@@ -87,18 +87,15 @@ fun StudentListScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // SỬA TẠI ĐÂY: Sử dụng displayName thay vì name
                     val filtered = state.students.filter { it.displayName.contains(state.searchQuery, true) }
 
-                    // SỬA TẠI ĐÂY: Sử dụng studentId thay vì id làm key
                     items(filtered, key = { it.studentId }) { student ->
                         StudentCard(
-                            student = student, // Đảm bảo StudentCard nhận SeatAssignmentDto hoặc cập nhật nó tương ứng
+                            student = student,
                             onClick = { id ->
                                 navController.navigate(Screen.StudentDetail.createRoute(id.toString()))
                             },
                             onEdit = { /* TODO */ },
-                            // SỬA TẠI ĐÂY: Sử dụng studentId
                             onDelete = { viewModel.deleteStudent(student.studentId, contextId) }
                         )
                     }

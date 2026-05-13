@@ -27,9 +27,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.sensenote.presentation.ui.navigation.Screen
 
 @Composable
-fun SenseNoteBottomNavigation(navController: NavController) {
+fun BottomNavigation(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val contextId = navBackStackEntry?.arguments?.getInt("contextId") ?: 0
+    val className = navBackStackEntry?.arguments?.getString("className") ?: ""
+    val rows = navBackStackEntry?.arguments?.getInt("rows") ?: 0
+    val cols = navBackStackEntry?.arguments?.getInt("cols") ?: 0
+    val seatsPerTable = navBackStackEntry?.arguments?.getInt("seatsPerTable") ?: 0
 
     val activeColor = Color(0xFF635BFF)
     val inactiveColor = Color(0xFF9FA8DA)
@@ -52,57 +58,70 @@ fun SenseNoteBottomNavigation(navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 1. Nút SƠ ĐỒ LỚP
                 IconButton(onClick = {
-                    if (currentRoute != Screen.SeatMap.route) {
-                        navController.navigate(Screen.SeatMap.route)
+                    if (currentRoute?.startsWith("seat_map") == false && contextId != 0) {
+                        navController.navigate(
+                            Screen.SeatMap.createRoute(contextId, className, rows, cols, seatsPerTable)
+                        ) {
+                            launchSingleTop = true
+                        }
                     }
                 }) {
                     Icon(
                         imageVector = Icons.Outlined.Dashboard,
                         contentDescription = "Sơ đồ lớp",
-                        tint = if (currentRoute == Screen.SeatMap.route) activeColor else inactiveColor
+                        tint = if (currentRoute?.startsWith("seat_map") == true) activeColor else inactiveColor
                     )
                 }
 
+                // 2. Nút DANH SÁCH HỌC SINH
                 IconButton(onClick = {
-                    if (currentRoute != Screen.StudentList.route) {
-                        navController.navigate(Screen.StudentList.route)
+                    if (currentRoute?.startsWith("student_list") == false && contextId != 0) {
+                        navController.navigate(
+                            Screen.StudentList.createRoute(contextId, className, rows, cols, seatsPerTable)
+                        ) {
+                            launchSingleTop = true
+                        }
                     }
                 }) {
                     Icon(
                         imageVector = Icons.Outlined.People,
                         contentDescription = "Danh sách học sinh",
-                        tint = if (currentRoute == Screen.StudentList.route) activeColor else inactiveColor
+                        tint = if (currentRoute?.startsWith("student_list") == true) activeColor else inactiveColor
                     )
                 }
 
                 Spacer(modifier = Modifier.width(56.dp))
 
-                IconButton(onClick = { /* navController.navigate(Screen.Diary.route) */ }) {
+                // 3. Nút Nhật ký
+                IconButton(onClick = { /* Xử lý Diary sau */ }) {
                     Icon(
                         imageVector = Icons.Outlined.Description,
                         contentDescription = "Nhật ký",
-                        tint = if (currentRoute == "diary_route") activeColor else inactiveColor
+                        tint = if (currentRoute == Screen.Diary.route) activeColor else inactiveColor
                     )
                 }
 
+                // 4. Nút Báo cáo
                 IconButton(onClick = {
-                    if (currentRoute != Screen.Report.route) {
-                        navController.navigate(Screen.Report.route)
+                    if (currentRoute?.startsWith("report") == false) {
+                        navController.navigate(Screen.Report.createRoute("0"))
                     }
                 }) {
                     Icon(
                         imageVector = Icons.Outlined.BarChart,
                         contentDescription = "Báo cáo",
-                        tint = if (currentRoute == "report_route") activeColor else inactiveColor
+                        tint = if (currentRoute?.startsWith("report") == true) activeColor else inactiveColor
                     )
                 }
             }
         }
 
+        // Nút Home trung tâm
         Box(
             modifier = Modifier
-                .offset(y = (-25).dp)
+                .offset(y = (-25.dp))
                 .size(56.dp)
                 .shadow(8.dp, CircleShape)
                 .clip(CircleShape)

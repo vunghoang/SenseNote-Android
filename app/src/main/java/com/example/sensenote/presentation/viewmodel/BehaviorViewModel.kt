@@ -39,7 +39,7 @@ class BehaviorViewModel @Inject constructor(
         viewModelScope.launch {
             val request = CreateBehaviorCategoryRequest(name, point, icon)
             repository.createCategory(request).onSuccess {
-                loadCategories() // Refresh lại danh sách sau khi thêm
+                loadCategories()
             }
         }
     }
@@ -47,7 +47,7 @@ class BehaviorViewModel @Inject constructor(
     fun deleteCategory(id: Int) {
         viewModelScope.launch {
             repository.deleteCategory(id).onSuccess {
-                loadCategories() // Refresh lại danh sách sau khi xóa
+                loadCategories()
             }
         }
     }

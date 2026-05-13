@@ -13,8 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sensenote.presentation.ui.navigation.NavGraph
 import com.example.sensenote.presentation.ui.navigation.Screen
-import com.example.sensenote.presentation.ui.screens.HomeScreen
-import com.example.sensenote.presentation.ui.screens.StudentListScreen
 import com.example.sensenote.ui.theme.SenseNoteTheme
 import dagger.hilt.android.AndroidEntryPoint
 

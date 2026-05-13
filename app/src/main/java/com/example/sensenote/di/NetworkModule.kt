@@ -1,6 +1,14 @@
 package com.example.sensenote.di
 
-import com.example.sensenote.data.remote.ApiService
+//import com.example.sensenote.data.remote.ApiService
+import com.example.sensenote.data.local.TokenManager
+import com.example.sensenote.data.remote.AuthApi
+import com.example.sensenote.data.remote.BehaviorCategoryApi
+import com.example.sensenote.data.remote.BehaviorLogApi
+import com.example.sensenote.data.remote.LessonApi
+import com.example.sensenote.data.remote.SeatAssignmentApi
+import com.example.sensenote.data.remote.StudentApi
+import com.example.sensenote.data.remote.TeachingContextApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +22,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://10.0.2.2:5029/api/"
+    private const val BASE_URL = "http://10.0.2.2:8080/api/"
 
     @Provides
     @Singleton
@@ -26,9 +34,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        tokenManager: TokenManager,
+        loggingInterceptor: HttpLoggingInterceptor // Thêm tham số này
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
+            .addInterceptor(loggingInterceptor) // QUAN TRỌNG: Thêm dòng này để hiện Log mạng
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                val token = tokenManager.getToken()
+                if (token != null) {
+                    request.addHeader("Authorization", "Bearer $token")
+                }
+                chain.proceed(request.build())
+            }
             .build()
     }
 
@@ -44,7 +63,39 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create(ApiService::class.java)
+    fun provideAuthApi(retrofit: Retrofit): AuthApi {
+        return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStudentApi(retrofit: Retrofit): StudentApi {
+        return retrofit.create(StudentApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTeachingContextApi(retrofit: Retrofit): TeachingContextApi {
+        return retrofit.create(TeachingContextApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLessonApi(retrofit: Retrofit): LessonApi = retrofit.create(LessonApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideBehaviorCategoryApi(retrofit: Retrofit): BehaviorCategoryApi =
+        retrofit.create(BehaviorCategoryApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideBehaviorLogApi(retrofit: Retrofit): BehaviorLogApi =
+        retrofit.create(BehaviorLogApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSeatAssignmentApi(retrofit: Retrofit): SeatAssignmentApi {
+        return retrofit.create(SeatAssignmentApi::class.java)
     }
 }

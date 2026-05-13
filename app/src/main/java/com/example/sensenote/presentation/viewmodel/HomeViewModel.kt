@@ -56,8 +56,8 @@ class HomeViewModel @Inject constructor(
                 seatsPerTable = seats
             )
             repository.createNewContext(request).onSuccess {
-                onShowAddClassDialog(false) // Đóng Dialog
-                loadTeachingContexts() // QUAN TRỌNG: Gọi lại hàm này để cập nhật HomeScreen
+                onShowAddClassDialog(false)
+                loadTeachingContexts()
             }
         }
     }

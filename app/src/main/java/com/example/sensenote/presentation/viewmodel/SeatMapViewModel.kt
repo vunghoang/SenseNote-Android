@@ -28,11 +28,8 @@ class SeatMapViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Gọi repository để lấy danh sách chỗ ngồi
             seatRepository.getSeatAssignments(contextId)
                 .onSuccess { data ->
-                    // Backend đã sắp xếp theo ordinalIndex
-                    // Dữ liệu này chứa displayName và sensitiveLocations của từng học sinh
                     _uiState.update { it.copy(seats = data, isLoading = false) }
                 }
                 .onFailure { ex ->
@@ -41,10 +38,6 @@ class SeatMapViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Cập nhật vị trí ghế (Ví dụ khi giáo viên kéo thả học sinh sang ghế khác)
-     * Khớp với endpoint PUT trong Seats.cs
-     */
     fun updateSeatAssignment(contextId: Int, studentId: Int, newOrdinalIndex: Int) {
         viewModelScope.launch {
             val request = UpdateSeatAssignmentRequest(

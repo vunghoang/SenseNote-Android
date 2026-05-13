@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Trạng thái riêng cho luồng đăng ký
 sealed class RegisterState {
     object Idle : RegisterState()
     object Loading : RegisterState()
@@ -30,17 +29,14 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
 
-            // Gọi repository để đăng ký tài khoản mới
             val result = authRepository.register(email, password, fullName)
 
             result.onSuccess { response ->
-                // Kiểm tra nếu backend trả về token luôn để thực hiện auto-login
                 if (response.accessToken != null) {
                     _registerState.value = RegisterState.Success(
                         LoginResponse(response.accessToken, response.refreshToken ?: "")
                     )
                 } else {
-                    // Nếu không có token, gọi login ngầm để lấy token
                     val loginResult = authRepository.login(email, password)
                     loginResult.onSuccess { loginResponse ->
                         _registerState.value = RegisterState.Success(loginResponse)

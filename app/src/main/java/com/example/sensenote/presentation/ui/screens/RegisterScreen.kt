@@ -27,11 +27,10 @@ fun RegisterScreen(
     val registerState by viewModel.registerState.collectAsState()
     val context = LocalContext.current
 
-    // Theo dõi trạng thái để điều hướng khi thành công
     LaunchedEffect(registerState) {
         when (registerState) {
             is RegisterState.Success -> {
-                onRegisterSuccess() // Điều hướng vào Home ngay lập tức
+                onRegisterSuccess()
             }
             is RegisterState.Error -> {
                 Toast.makeText(context, (registerState as RegisterState.Error).message, Toast.LENGTH_LONG).show()

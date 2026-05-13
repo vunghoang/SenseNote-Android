@@ -27,14 +27,12 @@ class LoginViewModel @Inject constructor(
     private val _loginState = MutableStateFlow<AuthState>(AuthState.Idle)
     val loginState = _loginState.asStateFlow()
 
-    // ... trong LoginViewModel
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginState.value = AuthState.Loading
             val result = authRepository.login(email, password)
 
             result.onSuccess { response ->
-                // Lưu token vào máy ngay khi login thành công
                 tokenManager.saveToken(response.accessToken)
                 _loginState.value = AuthState.Success(response)
             }.onFailure { /* ... */ }

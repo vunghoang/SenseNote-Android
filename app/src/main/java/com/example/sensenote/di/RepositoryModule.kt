@@ -22,15 +22,33 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindBehaviorRepository(impl: BehaviorRepositoryImpl): BehaviorRepository
+    abstract fun bindTeachingContextRepository(
+        impl: TeachingContextRepositoryImpl
+    ): TeachingContextRepository
 
     @Binds
     @Singleton
-    abstract fun bindTeachingContextRepository(impl: TeachingContextRepositoryImpl): TeachingContextRepository
+    abstract fun bindSeatRepository(impl: SeatRepositoryImpl): SeatRepository
 
     @Binds
     @Singleton
-    abstract fun bindClassRepository(
-        classRepositoryImpl: ClassRepositoryImpl
-    ): ClassRepository
+    abstract fun bindLessonRepository(impl: LessonRepositoryImpl): LessonRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBehaviorCategoryRepository(
+        impl: BehaviorCategoryRepositoryImpl
+    ): BehaviorCategoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBehaviorLogRepository(
+        impl: BehaviorLogRepositoryImpl
+    ): BehaviorLogRepository
+
+//    @Binds
+//    @Singleton
+//    abstract fun bindBehaviorRepository(
+//        behaviorRepositoryImpl: BehaviorRepositoryImpl
+//    ): BehaviorRepository
 }

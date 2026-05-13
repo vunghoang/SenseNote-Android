@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class StudentListUiState(
-    // Chuyển sang sử dụng SeatAssignmentDto
     val students: List<SeatAssignmentDto> = emptyList(),
     val isLoading: Boolean = false,
     val searchQuery: String = "",
@@ -34,12 +33,11 @@ class StudentListViewModel @Inject constructor(
     fun loadStudents(contextId: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            // Lấy danh sách chỗ ngồi từ SeatRepository
             seatRepository.getSeatAssignments(contextId)
                 .onSuccess { data ->
                     _uiState.update { it.copy(
                         isLoading = false,
-                        students = data // Data ở đây đã là List<SeatAssignmentDto>
+                        students = data
                     )}
                 }
                 .onFailure { ex ->
@@ -50,7 +48,6 @@ class StudentListViewModel @Inject constructor(
 
     fun deleteStudent(studentId: Int, contextId: Int) {
         viewModelScope.launch {
-            // Xóa học sinh dựa trên ID thực tế
             studentRepository.deleteStudent(studentId).onSuccess {
                 loadStudents(contextId)
             }

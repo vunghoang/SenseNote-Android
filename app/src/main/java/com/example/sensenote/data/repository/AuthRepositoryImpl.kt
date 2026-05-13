@@ -12,7 +12,6 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun login(email: String, password: String): Result<LoginResponse> {
         return try {
-            // Sử dụng apiCall để tự động kiểm tra success và unwrap data
             val response = api.login(LoginRequest(email, password))
             Result.success(response)
         } catch (e: Exception) {

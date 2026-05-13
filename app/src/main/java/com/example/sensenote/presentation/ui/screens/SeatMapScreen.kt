@@ -71,9 +71,6 @@ fun SeatMapScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         for (c in 0 until cols) {
-                            // SỬA LỖI: Tính toán index của bàn hiện tại (tableIndex)
-                            // Một bàn tại (r, c) sẽ chứa các ghế có ordinalIndex nằm trong khoảng từ
-                            // (r * cols + c) * seatsPerTable đến ((r * cols + c) + 1) * seatsPerTable - 1
                             val tableIndex = r * cols + c
                             val assignedInTable = state.seats.filter {
                                 (it.ordinalIndex / seatsPerTable) == tableIndex
@@ -89,7 +86,6 @@ fun SeatMapScreen(
                 }
             }
 
-            // ... phần Bục giảng & Chú thích giữ nguyên
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -144,12 +140,10 @@ fun TableCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             repeat(seatsPerTable) { seatIndex ->
-                // SỬA LỖI: Tìm học sinh có ordinalIndex khớp với vị trí ghế trong bàn này
                 val student = assignedSeats.find { (it.ordinalIndex % seatsPerTable) == seatIndex }
 
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     StudentAvatarItem(
-                        // Sử dụng displayName từ Backend
                         name = student?.displayName ?: "Trống",
                         isOccupied = student != null
                     )
@@ -163,7 +157,7 @@ fun StudentAvatarItem(name: String, isOccupied: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(32.dp) // Kích thước avatar nhỏ gọn để vừa khít màn hình dọc
+                .size(32.dp)
                 .clip(CircleShape)
                 .background(if (isOccupied) Color.White else Color(0xFFF5F5F5))
                 .border(1.dp, if (isOccupied) Color(0xFF90CAF9) else Color.LightGray, CircleShape),

@@ -34,12 +34,10 @@ class BehaviorCategoryRepositoryImpl @Inject constructor(
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getCategoriesByTeacher() = try {
-        // Đổi .items thành .behaviorCategories để khớp với DTO
         Result.success(api.getCategoriesByTeacher().behaviorCategories)
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getCategoriesByContext(contextId: Int) = try {
-        // Đổi .items thành .behaviorCategories để khớp với DTO
         Result.success(api.getCategoriesByContext(contextId).behaviorCategories)
     } catch (e: Exception) { Result.failure(e) }
 }

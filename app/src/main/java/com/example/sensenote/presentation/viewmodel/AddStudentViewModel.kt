@@ -44,15 +44,14 @@ class AddStudentViewModel @Inject constructor(private val repository: StudentRep
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            // Tạo request với đầy đủ các tham số đã định nghĩa trong DTO
             val request = AddStudentRequest(
                 fullName = state.name,
                 displayName = state.name,
                 birthday = if (state.dob.isNotBlank()) state.dob else null, // Xử lý ngày sinh
                 classId = classId,
                 teachingContextId = teachingContextId,
-                ordinalIndex = state.selectedSeat, // Vị trí ghế đã chọn
-                medicalNotes = null // Bạn có thể thêm trường nhập ghi chú y tế nếu cần
+                ordinalIndex = state.selectedSeat,
+                medicalNotes = null
             )
 
             repository.addStudent(request).onSuccess {

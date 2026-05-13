@@ -86,7 +86,6 @@ fun LoginScreen(
             }
         }
 
-        // --- Nút đăng ký mới được thêm vào ---
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
@@ -99,7 +98,6 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodyMedium
             )
             TextButton(onClick = {
-                // Điều hướng sang route "register" đã định nghĩa trong NavGraph
                 navController.navigate("register")
             }) {
                 Text(text = "Đăng ký ngay")

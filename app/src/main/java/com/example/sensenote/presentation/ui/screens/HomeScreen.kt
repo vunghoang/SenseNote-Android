@@ -23,7 +23,7 @@ import com.example.sensenote.presentation.viewmodel.HomeViewModel
 @Composable
 fun HomeScreen(
     navController: NavController,
-    onClassClick: (TeachingContextDto) -> Unit, // Đổi từ Int sang Dto để lấy đủ rows/cols
+    onClassClick: (TeachingContextDto) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -45,7 +45,6 @@ fun HomeScreen(
                 .background(Color(0xFFF8F9FE))
         ) {
             item {
-                // Cập nhật ở đây: Truyền lệnh điều hướng tới route behavior_setting
                 HomeTopBar(
                     name = state.teacherName,
                     onSettingsClick = {
@@ -70,7 +69,7 @@ fun HomeScreen(
                         ClassCard(
                             item = item,
                             modifier = Modifier.weight(1f),
-                            onClick = { onClassClick(item) } // Truyền cả item
+                            onClick = { onClassClick(item) }
                         )
                     }
                     if (rowClasses.size == 1) Spacer(modifier = Modifier.weight(1f).padding(8.dp))
@@ -99,8 +98,6 @@ fun ClassCard(item: TeachingContextDto, modifier: Modifier, onClick: () -> Unit)
         }
     }
 }
-
-// Giữ nguyên các component HomeTopBar, CalendarStrip, DateItem, SearchBarSection...
 
 @Composable
 fun HomeTopBar(name: String, onSettingsClick: () -> Unit) {
@@ -149,7 +146,7 @@ fun HomeTopBar(name: String, onSettingsClick: () -> Unit) {
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Cài đặt hành vi",
                     modifier = Modifier.size(28.dp),
-                    tint = Color(0xFF635BFF) // Màu tím chủ đạo của SenseNote
+                    tint = Color(0xFF635BFF)
                 )
             }
         }

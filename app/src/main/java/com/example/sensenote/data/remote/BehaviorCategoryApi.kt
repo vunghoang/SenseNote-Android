@@ -4,7 +4,7 @@ import com.example.sensenote.data.remote.dto.*
 import retrofit2.http.*
 
 interface BehaviorCategoryApi {
-    @POST("BehaviorCategories") // Route PascalCase khớp với Backend
+    @POST("BehaviorCategories")
     suspend fun createCategory(@Body request: CreateBehaviorCategoryRequest): Int
 
     @PUT("BehaviorCategories")
@@ -13,11 +13,9 @@ interface BehaviorCategoryApi {
     @DELETE("BehaviorCategories/{id}")
     suspend fun deleteCategory(@Path("id") id: Int)
 
-    // Khớp với Route "apply"
     @POST("BehaviorCategories/apply")
     suspend fun applyToContext(@Body request: BehaviorCategoryMappingRequest)
 
-    // Khớp với Route "remove"
     @HTTP(method = "DELETE", path = "BehaviorCategories/remove", hasBody = true)
     suspend fun removeFromContext(@Body request: BehaviorCategoryMappingRequest)
 

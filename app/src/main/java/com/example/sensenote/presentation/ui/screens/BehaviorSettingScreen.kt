@@ -25,7 +25,7 @@ import androidx.navigation.NavHostController
 @Composable
 fun BehaviorSettingScreen(
     navController: NavHostController,
-    viewModel: BehaviorViewModel = hiltViewModel() // Tự khởi tạo ViewModel bằng Hilt ở đây
+    viewModel: BehaviorViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
@@ -49,7 +49,6 @@ fun BehaviorSettingScreen(
             )
         }
     ) { padding ->
-        // Logic hiển thị danh sách (như code cũ)
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color(0xFF6A5AE0))
@@ -70,7 +69,6 @@ fun BehaviorSettingScreen(
             }
         }
 
-        // Logic ModalBottomSheet để thêm mới (như code cũ)
         if (showSheet) {
             ModalBottomSheet(onDismissRequest = { showSheet = false }) {
                 Column(modifier = Modifier.padding(24.dp).padding(bottom = 32.dp)) {
@@ -107,7 +105,6 @@ fun BehaviorSettingScreen(
     }
 }
 
-// Giữ nguyên Composable BehaviorItemRow bên dưới
 @Composable
 fun BehaviorItemRow(name: String, point: Int, onDelete: () -> Unit) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {

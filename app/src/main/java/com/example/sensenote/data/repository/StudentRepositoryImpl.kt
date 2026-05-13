@@ -11,7 +11,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun addStudent(request: AddStudentRequest): Result<AddStudentResponse> {
         return try {
-            // Gọi trực tiếp, không dùng apiCall vì API không trả về ApiResponse
             Result.success(api.addStudent(request))
         } catch (e: Exception) {
             Result.failure(e)
@@ -20,7 +19,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun getStudentInfo(contextId: Int, studentId: Int): Result<StudentInfoVm> {
         return try {
-            // Truyền đủ 2 tham số theo yêu cầu của Backend
             val data = api.getStudentInfo(contextId, studentId)
             Result.success(data)
         } catch (e: Exception) {
@@ -48,7 +46,6 @@ class StudentRepositoryImpl @Inject constructor(
 
     override suspend fun getStudentsByClass(classId: Int): Result<List<StudentSummaryDto>> {
         return try {
-            // Truy cập trực tiếp vào thuộc tính .students của StudentListVm
             val response = api.getStudentsByClass(classId)
             Result.success(response.students)
         } catch (e: Exception) {
